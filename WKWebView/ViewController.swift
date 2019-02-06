@@ -8,6 +8,20 @@
 
 import UIKit
 import WebKit
+import Kanna
+
+let address = "http://itest.5ch.net/lavender/test/read.cgi/asaloon/1548491553"
+let titleXpathString = "//div[@id='title']"
+let titleXpathString2 = "//div[@id='title']"
+let bodyXpathString = "//li[@id='res_1']/div[@class='threadview_response_body' and 5]"
+let isHeader = false
+
+
+
+
+
+
+
 
 class ViewController: UIViewController {
     
@@ -21,7 +35,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initializeWebView()
-        webView.load(URLRequest(url: URL(string: "https://github.com/")!))
+        let url = URL(string: address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
+        webView.load(URLRequest(url: url))
+        
     }
     
     @IBAction func onReloadButton(_ sender: UIBarButtonItem) {
@@ -94,6 +110,47 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
         textField.text = webView.url?.absoluteString ?? ""
         indicatorView.stopAnimating()
         textField.resignFirstResponder()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            webView.evaluateJavaScript("document.documentElement.innerHTML",
+                                       completionHandler: { (html, _) -> Void in
+                                        guard let htmlString = html as? String else { return }
+                                        print("ran")
+                                        
+                                        do {
+                                            var doc: HTMLDocument
+                                            try doc = HTML(html: htmlString, encoding: String.Encoding.utf8)
+                                            var parentNode: XMLElement? = nil
+                                            if(isHeader){
+                                                parentNode = doc.head
+                                            } else {
+                                                parentNode = doc.body
+                                            }
+                                            
+                                            
+                                            var titleNodes = parentNode?.xpath(titleXpathString)
+                                            if(titleNodes?.count == 0) {
+                                                titleNodes = parentNode?.xpath(titleXpathString2)
+                                            }
+                                            for node in titleNodes! {
+                                                print(node.content)
+                                                break
+                                            }
+                                            
+                                            var contentNodes = parentNode?.xpath(bodyXpathString)
+                                            for node in contentNodes! {
+                                                print(node.content)
+                                            }
+                                            
+                                        } catch let error {
+                                            print(error)
+                                        }
+            }
+            )
+
+        }
+        
+        
     }
     
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
