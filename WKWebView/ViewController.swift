@@ -10,11 +10,16 @@ import UIKit
 import WebKit
 import Kanna
 
-let address = "http://itest.5ch.net/lavender/test/read.cgi/asaloon/1548491553"
-let titleXpathString = "//div[@id='title']"
-let titleXpathString2 = "//div[@id='title']"
-let bodyXpathString = "//li[@id='res_1']/div[@class='threadview_response_body' and 5]"
-let isHeader = false
+let address = "https://www.google.co.jp/search?num=50&ei=4TZaXP75Fcj88gXIm66oBw&q=smooz+browser&oq=smooz+browser&gs_l=mobile-gws-wiz-serp.3..0j0i203l3j0i30.375695.379852..379970...1.0..0.130.1492.1j12......0....1.......5..0i131j0i4j35i39j0i67.v3oG9YEFumQ"
+let titleXpathString = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[1]/div[1]/a[@class='C8nzq BmP5tf' and 1]/div[@class='MUxGbd v0nnCb' and 1]"
+
+/*
+ あるサイトurlパターン一緒なのに、xpathのパターン複数がありますと。webview delegateをみると、結果0かどうか確認し、0だったら２番目のパターンを使う
+ */
+
+let titleXpathString2 = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[1]/div[1]/a[@class='C8nzq BmP5tf' and 1]/div[@class='MUxGbd v0nnCb' and 1]"
+let bodyXpathString = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[2]/div[@class='BmP5tf' and 1]/div[@class='MUxGbd yDYNvb' and 1]"
+let isHeader = false //情報ヘッダから撮るか
 
 
 
@@ -111,11 +116,14 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
         indicatorView.stopAnimating()
         textField.resignFirstResponder()
         
+        /*
+            この辺から抽出のところとなっている。DispatchQueue.main.asyncAfterはあるサイトreactiveで、情報はすぐ取れないと言う訳です。
+        */
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             webView.evaluateJavaScript("document.documentElement.innerHTML",
                                        completionHandler: { (html, _) -> Void in
                                         guard let htmlString = html as? String else { return }
-                                        print("ran")
                                         
                                         do {
                                             var doc: HTMLDocument
@@ -134,7 +142,6 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                             }
                                             for node in titleNodes! {
                                                 print(node.content)
-                                                break
                                             }
                                             
                                             var contentNodes = parentNode?.xpath(bodyXpathString)
