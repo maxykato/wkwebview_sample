@@ -9,19 +9,25 @@
 import UIKit
 import WebKit
 import Kanna
+import RealmSwift
 
-let address = "https://www.google.co.jp/search?num=50&ei=4TZaXP75Fcj88gXIm66oBw&q=smooz+browser&oq=smooz+browser&gs_l=mobile-gws-wiz-serp.3..0j0i203l3j0i30.375695.379852..379970...1.0..0.130.1492.1j12......0....1.......5..0i131j0i4j35i39j0i67.v3oG9YEFumQ"
-let titleXpathString = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[1]/div[1]/a[@class='C8nzq BmP5tf' and 1]/div[@class='MUxGbd v0nnCb' and 1]"
+var address = "https://headlines.yahoo.co.jp/hl?a=20190204-35132229-cnetj-sci"
+var titleXpathString = "//meta[@property='og:description']"
 
 /*
  あるサイトurlパターン一緒なのに、xpathのパターン複数がありますと。webview delegateをみると、結果0かどうか確認し、0だったら２番目のパターンを使う
  */
 
 let titleXpathString2 = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[1]/div[1]/a[@class='C8nzq BmP5tf' and 1]/div[@class='MUxGbd v0nnCb' and 1]"
-let bodyXpathString = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[2]/div[@class='BmP5tf' and 1]/div[@class='MUxGbd yDYNvb' and 1]"
+var bodyXpathString = "//div[@class='headlineText']/p[1]"
 let isHeader = false //情報ヘッダから撮るか
 
 
+class TextExtractResult: Object {
+    dynamic var id = 0
+    dynamic var title = ""
+    dynamic var content = ""
+}
 
 
 
@@ -36,13 +42,39 @@ class ViewController: UIViewController {
     @IBOutlet weak var indicatorView: UIActivityIndicatorView!
     
     @IBOutlet weak var bottomLabel: UILabel!
+    var csvArr: [String] = []
+    var i = 1
+    var csvArr2: [[String]] = []
+    var titleString  = ""
+    var content = ""
+    var id = 0
+    let realm = try! Realm()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initializeWebView()
+        if let csvPath = Bundle.main.path(forResource: "xpathList", ofType: "tsv") {
+            do {
+                let csvStr = try String(contentsOfFile: csvPath, encoding: String.Encoding.utf8)
+                csvArr = csvStr.components(separatedBy: "\n")
+            } catch let error as NSError {
+                print(error.localizedDescription)
+            }
+        }
+        
+        for data in csvArr {
+            print(data)
+            let splitedData = data.components(separatedBy: "\t")
+            csvArr2.append(splitedData)
+        }
+        
+        address = csvArr2[i][2]
+        titleXpathString = csvArr2[i][6]
+        bodyXpathString = csvArr2[i][8]
+        //
+        //
         let url = URL(string: address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
         webView.load(URLRequest(url: url))
-        
     }
     
     @IBAction func onReloadButton(_ sender: UIBarButtonItem) {
@@ -117,8 +149,8 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
         textField.resignFirstResponder()
         
         /*
-            この辺から抽出のところとなっている。DispatchQueue.main.asyncAfterはあるサイトreactiveで、情報はすぐ取れないと言う訳です。
-        */
+         この辺から抽出のところとなっている。DispatchQueue.main.asyncAfterはあるサイトreactiveで、情報はすぐ取れないと言う訳です。
+         */
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             webView.evaluateJavaScript("document.documentElement.innerHTML",
@@ -140,21 +172,49 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                             if(titleNodes?.count == 0) {
                                                 titleNodes = parentNode?.xpath(titleXpathString2)
                                             }
+                                            
+                                            self.titleString = ""
+                                            self.content = ""
                                             for node in titleNodes! {
-                                                print(node.content)
+                                                print("title:" + node.content!)
+                                                self.titleString += node.content!
                                             }
                                             
-                                            var contentNodes = parentNode?.xpath(bodyXpathString)
+                                            let contentNodes = parentNode?.xpath(bodyXpathString)
                                             for node in contentNodes! {
-                                                print(node.content)
+                                                print("content:" + node.content!)
+                                                self.content += node.content!
                                             }
+                                            
+                                            let data = TextExtractResult()
+                                            data.title = self.titleString
+                                            data.content = self.content
+                                            data.id = Int(self.csvArr2[self.i][0])!
+                                            
+                                            try! self.realm.write {
+                                                self.realm.add(data)
+                                            }
+                                            
+                                            guard self.i < 36 else {
+                                                print("done")
+                                                return
+                                            }
+                                            self.i += 1
+                                            address = self.csvArr2[self.i][2]
+                                            
+                                            titleXpathString = self.csvArr2[self.i][6]
+                                            bodyXpathString = self.csvArr2[self.i][8]
+                                            
+                                            
+                                            let url = URL(string: address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
+                                            webView.load(URLRequest(url: url))
                                             
                                         } catch let error {
                                             print(error)
                                         }
             }
             )
-
+            
         }
         
         

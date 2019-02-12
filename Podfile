@@ -7,5 +7,6 @@ target 'WKWebView' do
 
   # Pods for WKWebView
   pod 'Kanna', '~> 4.0.0'
+  pod 'RealmSwift'
 
 end
