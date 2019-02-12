@@ -9,23 +9,26 @@
 import UIKit
 import WebKit
 import Kanna
+import UIKit
 
-let address = "https://www.google.co.jp/search?num=50&ei=4TZaXP75Fcj88gXIm66oBw&q=smooz+browser&oq=smooz+browser&gs_l=mobile-gws-wiz-serp.3..0j0i203l3j0i30.375695.379852..379970...1.0..0.130.1492.1j12......0....1.......5..0i131j0i4j35i39j0i67.v3oG9YEFumQ"
-let titleXpathString = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[1]/div[1]/a[@class='C8nzq BmP5tf' and 1]/div[@class='MUxGbd v0nnCb' and 1]"
 
-/*
- あるサイトurlパターン一緒なのに、xpathのパターン複数がありますと。webview delegateをみると、結果0かどうか確認し、0だったら２番目のパターンを使う
- */
+let address = "http://news.livedoor.com/topics/detail/15972309/"
 
-let titleXpathString2 = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[1]/div[1]/a[@class='C8nzq BmP5tf' and 1]/div[@class='MUxGbd v0nnCb' and 1]"
-let bodyXpathString = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[2]/div[@class='BmP5tf' and 1]/div[@class='MUxGbd yDYNvb' and 1]"
+let pattern = "\\/pickup\\/\\d+$"
+
+let titleXpathString = "/h1/a/p"
+
+//あるサイトurlパターン一緒なのに、xpathのパターン複数がありますと。webview delegateをみると、結果0かどうか確認し、0だったら２番目のパターンを使う
+
+let titleXpathString2 = "//h3"
+
+let bodyXpathString = "//*[@id='article-detail']/div/div"
+
+let bodyXpathString2 = "//*[@id='article-contents']/div[3]"
+
+
+
 let isHeader = false //情報ヘッダから撮るか
-
-
-
-
-
-
 
 
 class ViewController: UIViewController {
@@ -39,6 +42,11 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let regularExpression = try! NSRegularExpression(pattern: pattern)
+        let match = regularExpression.firstMatch(in: address, range: NSRange(location: 0, length: address.count))
+        print(match != nil)
+        
         initializeWebView()
         let url = URL(string: address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
         webView.load(URLRequest(url: url))
@@ -125,10 +133,13 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                        completionHandler: { (html, _) -> Void in
                                         guard let htmlString = html as? String else { return }
                                         
+                                        print("ran")
+                                        
                                         do {
                                             var doc: HTMLDocument
                                             try doc = HTML(html: htmlString, encoding: String.Encoding.utf8)
                                             var parentNode: XMLElement? = nil
+                                            
                                             if(isHeader){
                                                 parentNode = doc.head
                                             } else {
@@ -145,6 +156,9 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                             }
                                             
                                             var contentNodes = parentNode?.xpath(bodyXpathString)
+                                            if(contentNodes?.count == 0) {
+                                                contentNodes = parentNode?.xpath(bodyXpathString2)
+                                            }
                                             for node in contentNodes! {
                                                 print(node.content)
                                             }
