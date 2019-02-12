@@ -11,20 +11,23 @@ import WebKit
 import Kanna
 import RealmSwift
 
-var address = "https://headlines.yahoo.co.jp/hl?a=20190204-35132229-cnetj-sci"
-var titleXpathString = "//meta[@property='og:description']"
+var address = ""
+var titleXpathString = ""
 
 /*
  あるサイトurlパターン一緒なのに、xpathのパターン複数がありますと。webview delegateをみると、結果0かどうか確認し、0だったら２番目のパターンを使う
  */
 
-let titleXpathString2 = "//div[1]/div[@class='mnr-c xpd O9g5cc uUPGi' and 1]/div[@class='U3THc' and 1]/div[1]/div[1]/a[@class='C8nzq BmP5tf' and 1]/div[@class='MUxGbd v0nnCb' and 1]"
-var bodyXpathString = "//div[@class='headlineText']/p[1]"
-let isHeader = false //情報ヘッダから撮るか
+var bodyXpathString = ""
+var urlCondition = ""
+var isHeader = false
 
 
 class TextExtractResult: Object {
     dynamic var id = 0
+    dynamic var url = ""
+    dynamic var urlConditionMatch = true
+    dynamic var urlCondition = ""
     dynamic var title = ""
     dynamic var content = ""
 }
@@ -43,7 +46,7 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var bottomLabel: UILabel!
     var csvArr: [String] = []
-    var i = 1
+    var i = 0
     var csvArr2: [[String]] = []
     var titleString  = ""
     var content = ""
@@ -53,7 +56,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initializeWebView()
-        if let csvPath = Bundle.main.path(forResource: "xpathList", ofType: "tsv") {
+        if let csvPath = Bundle.main.path(forResource: "xpathList2", ofType: "tsv") {
             do {
                 let csvStr = try String(contentsOfFile: csvPath, encoding: String.Encoding.utf8)
                 csvArr = csvStr.components(separatedBy: "\n")
@@ -69,8 +72,13 @@ class ViewController: UIViewController {
         }
         
         address = csvArr2[i][2]
-        titleXpathString = csvArr2[i][6]
+        isHeader = csvArr2[i][6] == "1"
+        titleXpathString = csvArr2[i][7]
         bodyXpathString = csvArr2[i][8]
+        urlCondition = csvArr2[i][5]
+        
+        
+        
         //
         //
         let url = URL(string: address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
@@ -131,6 +139,12 @@ class ViewController: UIViewController {
                 completionHandler: {}
         )
     }
+    
+    func matchUrlPattern(str: String, pattern: String) -> Bool {
+        let regularExpression = try! NSRegularExpression(pattern: pattern)
+        let match = regularExpression.firstMatch(in: str, range: NSRange(location: 0, length: str.count))
+        return match != nil
+    }
 }
 
 // MARK: WebViewDelegate
@@ -168,10 +182,7 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                             }
                                             
                                             
-                                            var titleNodes = parentNode?.xpath(titleXpathString)
-                                            if(titleNodes?.count == 0) {
-                                                titleNodes = parentNode?.xpath(titleXpathString2)
-                                            }
+                                            let titleNodes = parentNode?.xpath(titleXpathString)
                                             
                                             self.titleString = ""
                                             self.content = ""
@@ -190,6 +201,9 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                             data.title = self.titleString
                                             data.content = self.content
                                             data.id = Int(self.csvArr2[self.i][0])!
+                                            data.url = address
+                                            data.urlConditionMatch = self.matchUrlPattern(str: address, pattern: urlCondition)
+                                            data.urlCondition = urlCondition
                                             
                                             try! self.realm.write {
                                                 self.realm.add(data)
@@ -201,10 +215,10 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                             }
                                             self.i += 1
                                             address = self.csvArr2[self.i][2]
-                                            
-                                            titleXpathString = self.csvArr2[self.i][6]
+                                            isHeader = self.csvArr2[self.i][6] == "1"
+                                            titleXpathString = self.csvArr2[self.i][7]
                                             bodyXpathString = self.csvArr2[self.i][8]
-                                            
+                                            urlCondition = self.csvArr2[self.i][5]
                                             
                                             let url = URL(string: address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
                                             webView.load(URLRequest(url: url))

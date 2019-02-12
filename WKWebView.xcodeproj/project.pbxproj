@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		49867EBC22128793003B8868 /* xpathList.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 49867EBB22128793003B8868 /* xpathList.tsv */; };
+		49867EBE2212A1D1003B8868 /* xpathList2.tsv in Resources */ = {isa = PBXBuildFile; fileRef = 49867EBD2212A1D1003B8868 /* xpathList2.tsv */; };
 		AE878A2C1F8DBF43003B795C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE878A2B1F8DBF43003B795C /* AppDelegate.swift */; };
 		AE878A2E1F8DBF43003B795C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE878A2D1F8DBF43003B795C /* ViewController.swift */; };
 		AE878A311F8DBF43003B795C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AE878A2F1F8DBF43003B795C /* Main.storyboard */; };
@@ -20,6 +21,7 @@
 /* Begin PBXFileReference section */
 		392DE61DE03FEF2BDFC60CC0 /* Pods_WKWebView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WKWebView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		49867EBB22128793003B8868 /* xpathList.tsv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = xpathList.tsv; sourceTree = "<group>"; };
+		49867EBD2212A1D1003B8868 /* xpathList2.tsv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = xpathList2.tsv; sourceTree = "<group>"; };
 		783E6E3BF41B40F31A07C00E /* Pods-WKWebView.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WKWebView.release.xcconfig"; path = "Pods/Target Support Files/Pods-WKWebView/Pods-WKWebView.release.xcconfig"; sourceTree = "<group>"; };
 		80E5CD34B4B9242B1305CEEA /* Pods-WKWebView.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WKWebView.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WKWebView/Pods-WKWebView.debug.xcconfig"; sourceTree = "<group>"; };
 		AE878A281F8DBF43003B795C /* WKWebView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WKWebView.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -76,6 +78,7 @@
 				AE878A2B1F8DBF43003B795C /* AppDelegate.swift */,
 				AE878A2D1F8DBF43003B795C /* ViewController.swift */,
 				49867EBB22128793003B8868 /* xpathList.tsv */,
+				49867EBD2212A1D1003B8868 /* xpathList2.tsv */,
 				AE8A406C1F8DCC98001F6C09 /* Benchmark.swift */,
 				AE878A2F1F8DBF43003B795C /* Main.storyboard */,
 				AE878A321F8DBF43003B795C /* Assets.xcassets */,
@@ -158,6 +161,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE878A361F8DBF43003B795C /* LaunchScreen.storyboard in Resources */,
+				49867EBE2212A1D1003B8868 /* xpathList2.tsv in Resources */,
 				49867EBC22128793003B8868 /* xpathList.tsv in Resources */,
 				AE878A331F8DBF43003B795C /* Assets.xcassets in Resources */,
 				AE878A311F8DBF43003B795C /* Main.storyboard in Resources */,
