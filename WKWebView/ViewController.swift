@@ -12,19 +12,13 @@ import Kanna
 import UIKit
 
 
-let address = "http://news.livedoor.com/topics/detail/15972309/"
+let address = "https://s.tabelog.com/chiba/A1203/A120301/12042344/party/"
 
-let pattern = "\\/pickup\\/\\d+$"
+let pattern = "\\/party\\/"
 
-let titleXpathString = "/h1/a/p"
+let titleXpathString = "//*[@id='rstdtl-top-header']/div/div/div/div[2]/div/a/h1"
 
-//あるサイトurlパターン一緒なのに、xpathのパターン複数がありますと。webview delegateをみると、結果0かどうか確認し、0だったら２番目のパターンを使う
-
-let titleXpathString2 = "//h3"
-
-let bodyXpathString = "//*[@id='article-detail']/div/div"
-
-let bodyXpathString2 = "//*[@id='article-contents']/div[3]"
+let bodyXpathString = "//*[@class='p-course-cassette__title']"
 
 
 
@@ -148,17 +142,11 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                             
                                             
                                             var titleNodes = parentNode?.xpath(titleXpathString)
-                                            if(titleNodes?.count == 0) {
-                                                titleNodes = parentNode?.xpath(titleXpathString2)
-                                            }
                                             for node in titleNodes! {
                                                 print(node.content)
                                             }
                                             
                                             var contentNodes = parentNode?.xpath(bodyXpathString)
-                                            if(contentNodes?.count == 0) {
-                                                contentNodes = parentNode?.xpath(bodyXpathString2)
-                                            }
                                             for node in contentNodes! {
                                                 print(node.content)
                                             }
