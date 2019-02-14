@@ -52,11 +52,12 @@ class ViewController: UIViewController {
     var content = ""
     var id = 0
     let realm = try! Realm()
+    var dataCount = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initializeWebView()
-        if let csvPath = Bundle.main.path(forResource: "xpathList2", ofType: "tsv") {
+        if let csvPath = Bundle.main.path(forResource: "xpathList", ofType: "tsv") {
             do {
                 let csvStr = try String(contentsOfFile: csvPath, encoding: String.Encoding.utf8)
                 csvArr = csvStr.components(separatedBy: "\n")
@@ -65,8 +66,9 @@ class ViewController: UIViewController {
             }
         }
         
+        dataCount = csvArr.count
+        
         for data in csvArr {
-            print(data)
             let splitedData = data.components(separatedBy: "\t")
             csvArr2.append(splitedData)
         }
@@ -209,7 +211,7 @@ extension ViewController: WKUIDelegate, WKNavigationDelegate {
                                                 self.realm.add(data)
                                             }
                                             
-                                            guard self.i < 36 else {
+                                            guard self.i < self.csvArr2.count - 1 else {
                                                 print("done")
                                                 return
                                             }
